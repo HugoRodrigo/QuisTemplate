@@ -1,22 +1,85 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+[System.Serializable]
+public class SerializableList<T>
+{
+    public List<T> Lista;
+}
+[System.Serializable]
+public class Pergunta
+{
+    public string pergunta = "";
+    public string respostaCerta = "";
+    public string respostaErradaA = "";
+    public string respostaErradaB = "";
+    public string respostaErradaC = "";
+    public int qtdRespostas = 0;
+    public Pergunta() { qtdRespostas = 2; }
+    public Pergunta(string pergunta, string respostaCerta, string respostaErrada)
+    {
+        this.pergunta = pergunta;
+        this.respostaCerta = respostaCerta;
+        this.respostaErradaA = respostaErrada;
+        qtdRespostas = 2;
+    }
+    public Pergunta(string pergunta, string respostaCerta, string respostaErradaA, string respostaErradaB)
+    {
+        this.pergunta = pergunta;
+        this.respostaCerta = respostaCerta;
+        this.respostaErradaA = respostaErradaA;
+        this.respostaErradaB = respostaErradaB;
+        qtdRespostas = 3;
+    }
+    public Pergunta(string pergunta, string respostaCerta, string respostaErradaA, string respostaErradaB, string respostaErradaC)
+    {
+        this.pergunta = pergunta;
+        this.respostaCerta = respostaCerta;
+        this.respostaErradaA = respostaErradaA;
+        this.respostaErradaB = respostaErradaB;
+        this.respostaErradaC = respostaErradaC;
+        qtdRespostas = 4;
+    }
+}
+
+[System.Serializable]
+public class Resposta
+{
+    public string pergunta = "";
+    public string respostaCerta = "";
+    public int quantidadeErros = 0;
+    public Resposta(string pergunta, string respostaCerta,int quantidadeErros)
+    {
+        this.pergunta = pergunta;
+        this.respostaCerta = respostaCerta;
+        this.quantidadeErros = quantidadeErros;
+
+    }
+}
+
 public class QuisScript : MonoBehaviour
 {
     public GameObject PainelRespostas;
     public TextMeshProUGUI Pergunta;
-
+    public int quantidadePerguntas = 10;
     public GameObject[] buttons;
+    [SerializeField]
     public GameObject buttonCerto;
+    [SerializeField]
     public GameObject buttonErrado;
     [SerializeField]
     public List<Pergunta> perguntas;
     public List<Pergunta> perguntasSelecionadas;
+    [SerializeField]
+    public List<Resposta> respostas = new List<Resposta>();
     Pergunta perguntaAtual;
+    [SerializeField]
     public string ProximoLevel;
+    [SerializeField]
     public string fileName;
     void Start()
     {
@@ -41,19 +104,20 @@ public class QuisScript : MonoBehaviour
                 System.IO.Directory.CreateDirectory(Application.dataPath + "/data/");
             }
             SerializableList<Pergunta> aux = new SerializableList<Pergunta>();
-            aux.Perguntas = perguntas;
+            aux.Lista = perguntas;
             string jsonData = JsonUtility.ToJson(aux);
             System.IO.File.WriteAllText(Application.dataPath + "/data/" + fileName + ".json", jsonData);
             Debug.Log(jsonData);
             Debug.Log("Salvo em: " + Application.dataPath + "/data/" + fileName + ".json");
             return true;
         }
-        catch(System.Exception ex)
+        catch (System.Exception ex)
         {
-            Debug.Log("Erro ao salvar: "+ex.ToString());
+            Debug.Log("Erro ao salvar: " + ex.ToString());
             return false;
         }
     }
+
     public bool LoadPerguntas()
     {
         try
@@ -66,7 +130,7 @@ public class QuisScript : MonoBehaviour
             string filePath = System.IO.Path.Combine(Application.dataPath + "/data/" + fileName + ".json");
             string data = System.IO.File.ReadAllText(filePath);
             SerializableList<Pergunta> aux = JsonUtility.FromJson<SerializableList<Pergunta>>(data);
-            perguntas = aux.Perguntas;
+            perguntas = aux.Lista;
 
             Debug.Log("Arquivo lido de: " + Application.dataPath + "/data/" + fileName + ".json");
             return true;
@@ -78,11 +142,32 @@ public class QuisScript : MonoBehaviour
         }
     }
 
-
+    public bool SalvarRespostas()
+    {
+        try
+        {
+            if (!System.IO.Directory.Exists(Application.dataPath + "/data/Respostas/"))
+            {
+                System.IO.Directory.CreateDirectory(Application.dataPath + "/data/Respostas/");
+            }
+            SerializableList<Resposta> aux = new SerializableList<Resposta>();
+            aux.Lista = respostas;
+            string jsonData = JsonUtility.ToJson(aux);
+            System.IO.File.WriteAllText(Application.dataPath + "/data/Respostas/" + fileName + ".json", jsonData);
+            Debug.Log(jsonData);
+            Debug.Log("Salvo em: " + Application.dataPath + "/data/Respostas/" + fileName + ".json");
+            return true;
+        }
+        catch (System.Exception ex)
+        {
+            Debug.Log("Erro ao salvar: " + ex.ToString());
+            return false;
+        }
+    }
 
     private void SetResposta()
     {
-        
+
         for (int i = 0; i < buttons.Length; i++) buttons[i].transform.SetParent(null);
         for (int i = 0; i < buttons.Length; i++)
         {
@@ -97,13 +182,17 @@ public class QuisScript : MonoBehaviour
     }
     void SelecionarPergunta()
     {
-        if (perguntas.Count == 0 || perguntas == null)
+        if (perguntas.Count == 0 || perguntas == null || perguntasSelecionadas.Count >= quantidadePerguntas)
         {
+            SalvarRespostas();
             SceneManager.LoadScene(ProximoLevel);
+            return;
         }
+        
         perguntaAtual = perguntas[Random.Range(0, perguntas.Count)];
         perguntasSelecionadas.Add(perguntaAtual);
         perguntas.Remove(perguntaAtual);
+        respostas.Add(new Resposta(perguntaAtual.pergunta,perguntaAtual.respostaCerta,0));
     }
     void IniciarButtons()
     {
@@ -112,7 +201,7 @@ public class QuisScript : MonoBehaviour
             Destroy(button.gameObject);
         }
         buttons = new GameObject[perguntaAtual.qtdRespostas];
-        buttons[0] = Instantiate(buttonCerto,PainelRespostas.transform);
+        buttons[0] = Instantiate(buttonCerto, PainelRespostas.transform);
         for (int i = 1; i < perguntaAtual.qtdRespostas; i++)
         {
             buttons[i] = Instantiate(buttonErrado, PainelRespostas.transform);
@@ -120,20 +209,20 @@ public class QuisScript : MonoBehaviour
         Pergunta.text = perguntaAtual.pergunta;
         buttons[0].GetComponentInChildren<TextMeshProUGUI>().text = perguntaAtual.respostaCerta;
         buttons[1].GetComponentInChildren<TextMeshProUGUI>().text = perguntaAtual.respostaErradaA;
-        if (perguntaAtual.qtdRespostas > 2) 
+        if (perguntaAtual.qtdRespostas > 2)
         {
             buttons[2].GetComponentInChildren<TextMeshProUGUI>().text = perguntaAtual.respostaErradaB;
         }
-        else 
+        else
         {
             //buttons[2].SetActive(false); 
         }
         if (perguntaAtual.qtdRespostas > 3)
         {
-            buttons[3].GetComponentInChildren<TextMeshProUGUI>().text = perguntaAtual.respostaErradaC; 
+            buttons[3].GetComponentInChildren<TextMeshProUGUI>().text = perguntaAtual.respostaErradaC;
         }
-        else 
-        { 
+        else
+        {
             //buttons[3].SetActive(false); 
         }
 
@@ -147,11 +236,7 @@ public class QuisScript : MonoBehaviour
     }
     public void Errado()
     {
+        respostas[respostas.Count - 1].quantidadeErros++;
         SetResposta();
     }
-}
-[System.Serializable]
-public class SerializableList<T>
-{
-    public List<T> Perguntas;
 }

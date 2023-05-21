@@ -334,15 +334,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7335788983458861175, guid: 95f2c26133f8a6f4a86c17f834dd4990, type: 3}
       propertyPath: fileName
-      value: Perguntas2
+      value: Perguntas
       objectReference: {fileID: 0}
     - target: {fileID: 7335788983458861175, guid: 95f2c26133f8a6f4a86c17f834dd4990, type: 3}
       propertyPath: ProximoLevel
-      value: Teste
+      value: Quis Scene
+      objectReference: {fileID: 0}
+    - target: {fileID: 7335788983458861175, guid: 95f2c26133f8a6f4a86c17f834dd4990, type: 3}
+      propertyPath: quantidadePerguntas
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 7335788983458861175, guid: 95f2c26133f8a6f4a86c17f834dd4990, type: 3}
       propertyPath: perguntas.Array.size
-      value: 3
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7335788983458861175, guid: 95f2c26133f8a6f4a86c17f834dd4990, type: 3}
       propertyPath: perguntas.Array.data[0].pergunta

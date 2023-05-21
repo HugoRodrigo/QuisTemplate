@@ -8,16 +8,23 @@ public class QuisEditorScript : Editor
 {
     bool pWindow = true;
     bool unityInspector = false;
+    [SerializeField]
+    QuisScript quis;
+    private void OnEnable()
+    {
+
+        quis = (QuisScript)target;
+    }
     public override void OnInspectorGUI()
     {
-        QuisScript quis = (QuisScript)target;
+        
 
         quis.PainelRespostas = (GameObject)EditorGUILayout.ObjectField("OBJ Painel de Respostas", quis.PainelRespostas, typeof(GameObject), true);
         quis.Pergunta = (TextMeshProUGUI)EditorGUILayout.ObjectField("TMP Pergunta", quis.Pergunta, typeof(TextMeshProUGUI), true);
         quis.buttonCerto = (GameObject)EditorGUILayout.ObjectField("Prefab Buttão Certo", quis.buttonCerto, typeof(GameObject), true);
         quis.buttonErrado = (GameObject)EditorGUILayout.ObjectField("Prefab Buttão Errado", quis.buttonErrado, typeof(GameObject), true);
         GUILayout.Space(10);
-
+        quis.quantidadePerguntas = EditorGUILayout.IntField("Quantidade de perguntas:", quis.quantidadePerguntas);
         GUILayout.Label("Nome do arquivo:");
         quis.fileName = GUILayout.TextField(quis.fileName);
         GUILayout.Label("Proximo level:");
@@ -84,6 +91,7 @@ public class QuisEditorScript : Editor
         GUILayout.Space(10);
 
         unityInspector = EditorGUILayout.Foldout(unityInspector, "Componete Original");
+        EditorUtility.SetDirty(quis);
         if (unityInspector) base.OnInspectorGUI();
     }
 
